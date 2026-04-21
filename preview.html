@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>バス逆算</title>
+</head>
+<body>
+
+<h3>札幌駅 到着希望時刻</h3>
+<input id="time" placeholder="08:30">
+<button onclick="calc()">検索</button>
+
+<h4>結果</h4>
+<ul id="result"></ul>
+
+<script>
+const busTimes = ["07:10","07:40","08:10","08:40","09:10"];
+
+const toEbetsu = 25;
+const toSapporo = 20;
+
+function toMin(t){
+  const [h,m] = t.split(":").map(Number);
+  return h*60 + m;
+}
+
+function toStr(min){
+  const h = Math.floor(min/60);
+  const m = min%60;
+  return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}`;
+}
+
+function calc(){
+  const input = document.getElementById("time").value;
+
+  const arrival = toMin(input);
+  const ebetsu = arrival - toSapporo;
+  const departLimit = ebetsu - toEbetsu;
+
+  const list = busTimes
+    .map(toMin)
+    .filter(t => t <= departLimit)
+    .sort((a,b)=>b-a)
+    .slice(0,3)
+    .map(toStr);
+
+  const ul = document.getElementById("result");
+  ul.innerHTML = "";
+
+  if(list.length === 0){
+    ul.innerHTML = "<li>間に合うバスなし</li>";
+    return;
+  }
+
+  list.forEach(t=>{
+    const li = document.createElement("li");
+    li.textContent = "出発: " + t;
+    ul.appendChild(li);
+  });
+}
+</script>
+
+</body>
+</html>

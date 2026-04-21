@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://unpkg.com/vue@3"></script>
+</head>
+<body>
+
+<div id="app">
+  <h3>札幌駅 到着希望</h3>
+  <input v-model="input" placeholder="08:30">
+  <button @click="calc">検索</button>
+
+  <ul>
+    <li v-for="t in result">{{t}}</li>
+  </ul>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+  data(){
+    return {
+      input:"",
+      result:[],
+      busTimes:["07:10","07:40","08:10","08:40","09:10"]
+    }
+  },
+  methods:{
+    toMin(t){
+      const [h,m]=t.split(":").map(Number);
+      return h*60+m;
+    },
+    toStr(min){
+      const h=Math.floor(min/60);
+      const m=min%60;
+      return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}`;
+    },
+    calc(){
+      const arrival = this.toMin(this.input);
+      const ebetsu = arrival - 20;
+      const limit = ebetsu - 25;
+
+      this.result = this.busTimes
+        .map(this.toMin)
+        .filter(t=>t<=limit)
+        .sort((a,b)=>b-a)
+        .slice(0,3)
+        .map(this.toStr);
+    }
+  }
+}).mount("#app");
+</script>
+
+</body>
+</html>
