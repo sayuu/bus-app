@@ -1,17 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <script src="https://unpkg.com/vue@3"></script>
 </head>
 <body>
 
 <div id="app">
-  <h3>札幌駅 到着希望</h3>
-  <input v-model="input" placeholder="08:30">
-  <button @click="calc">検索</button>
+  <h3>行き: 札幌駅 到着希望</h3>
+  <input v-model="goInput" placeholder="08:30">
+  <button @click="calcGo">検索</button>
 
   <ul>
-    <li v-for="t in result">{{t}}</li>
+    <li v-if="goSearched && goResult.length === 0">結果なし</li>
+    <li v-for="t in goResult">最寄りバス停 出発: {{t}}</li>
+  </ul>
+
+  <h3>帰り: 札幌駅 出発時刻</h3>
+  <input v-model="returnInput" placeholder="18:00">
+  <button @click="calcReturn">検索</button>
+
+  <ul>
+    <li v-if="returnSearched && returnResult.length === 0">結果なし</li>
+    <li v-for="t in returnResult">江別駅 出発: {{t}}</li>
   </ul>
 </div>
 
@@ -21,9 +32,13 @@ const { createApp } = Vue;
 createApp({
   data(){
     return {
-      input:"",
-      result:[],
-      busTimes:[
+      goInput:"",
+      goSearched:false,
+      goResult:[],
+      returnInput:"",
+      returnSearched:false,
+      returnResult:[],
+      goBusTimes:[
 "07:58",
 "08:48",
 "10:21",
@@ -37,6 +52,33 @@ createApp({
 "19:10",
 "19:30",
 "20:01"
+      ],
+      returnBusTimes:[
+"06:10",
+"06:30",
+"06:40",
+"07:00",
+"07:10",
+"07:20",
+"07:35",
+"07:50",
+"08:25",
+"09:35",
+"10:25",
+"11:20",
+"12:20",
+"13:00",
+"14:00",
+"14:30",
+"15:00",
+"15:30",
+"16:20",
+"16:50",
+"17:20",
+"17:45",
+"18:20",
+"19:00",
+"20:30"
       ]
     }
   },
@@ -50,18 +92,33 @@ createApp({
       const m=min%60;
       return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}`;
     },
-    calc(){
+    calcGo(){
       const toEbetsu = 25;
       const toSapporo = 30;
 
-      const arrival = this.toMin(this.input);
+      const arrival = this.toMin(this.goInput);
       const ebetsu = arrival - toSapporo;
       const departLimit = ebetsu - toEbetsu;
 
-      this.result = this.busTimes
+      this.goSearched = true;
+      this.goResult = this.goBusTimes
         .map(this.toMin)
         .filter(t=>t<=departLimit)
         .sort((a,b)=>b-a)
+        .slice(0,3)
+        .map(this.toStr);
+    },
+    calcReturn(){
+      const sapporoToEbetsu = 30;
+
+      const departure = this.toMin(this.returnInput);
+      const ebetsu = departure + sapporoToEbetsu;
+
+      this.returnSearched = true;
+      this.returnResult = this.returnBusTimes
+        .map(this.toMin)
+        .filter(t=>t>=ebetsu)
+        .sort((a,b)=>a-b)
         .slice(0,3)
         .map(this.toStr);
     }
